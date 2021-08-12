@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.1
-# UpdateDate: 2020-08-12 11:46
-# UpdateLog: 首次更新
+# Version: 0.0.2
+# UpdateDate: 2020-08-12 16:03
+# UpdateLog: 领取在线10分钟奖励 1积分
 
 import requests
 import json
@@ -12,7 +12,7 @@ import sys
 import logging
 import time
 
-def postApi(cookie,function):
+def postApi(cookie,option,function):
     headers = {
         'Accept-Language': 'zh-CN,zh;q=0.8',
         'User-Agent': 'okhttp-okgo/jeasonlzy',
@@ -30,7 +30,7 @@ def postApi(cookie,function):
         '_version': '2.6.1',
         '_uuid': '2f10ec91651f435b182296d44f0621027'
     }
-    response = requests.post('https://app.seres.cn/api/user/app/me/{}'.format(function), headers=headers, data=data)
+    response = requests.post('https://app.seres.cn/api/user/app/{}/{}'.format(option,function), headers=headers, data=data)
     return response.json()
 
 def readConfig(configPath):
@@ -86,21 +86,31 @@ userNum = len(config['cookie'])
 logger.info('共{}个账号'.format(userNum))
 
 for i in range(userNum):
+    # 检查签到状态
     logger.info('账号开始{}登陆'.format(i+1))
     cookie = config['cookie'][i]
-    userInfo = postApi(cookie,'get-me-center-data')
+    userInfo = postApi(cookie,'me','get-me-center-data')
     if userInfo['code'] == '4001':
         logger.error('用户{} Cookie无效'.format(i+1))
         continue
     else:
         logger.info('登陆成功')
     nickname = userInfo['value']['nickname']
+    # 签到 1积分
     if userInfo['value']['todayCheckedIn'] == True:
         logger.info('用户【{}】今日已签到，无需重复签到'.format(nickname))
-        continue
-    logger.info('用户【{}】今日未签到，开始签到'.format(nickname))
-    checkinResult = postApi(cookie,'checkin')
-    logger.info(checkinResult['message'])
+    else:
+        logger.info('用户【{}】今日未签到，开始签到'.format(nickname))
+        checkinResult = postApi(cookie,'me','checkin')
+        logger.info(checkinResult['message'])
+    # 领取在线10分钟奖励 1积分
+    logger.info('领取在线10分钟奖励')
+    awardResult = postApi(cookie, 'point', 'add-for-using-10min')
+    if awardResult['value']['amount'] == 1:
+        logger.info('获得1积分')
+    elif awardResult['value']['amount'] == 0:
+        logger.info('今日已领取过奖励')
+
 cleanLog(logDir)
     
     
