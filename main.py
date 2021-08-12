@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.4
-# UpdateDate: 2020-08-12 19:57
-# UpdateLog: 优化输出
+# Version: 0.0.5
+# UpdateDate: 2020-08-12 21:16
+# UpdateLog: 分享1积分*5 评论1积分*10
 
 import requests
 import json
@@ -11,6 +11,7 @@ import os
 import sys
 import logging
 import time
+import random
 
 class SeresCheckin():
     def __init__(self,cookie):
@@ -22,10 +23,13 @@ class SeresCheckin():
             '_version': '2.6.1',
             '_uuid': '2f10ec91651f435b182296d44f0621027'
         }
+        self.commentList = ['👍','👏','🧡','😀','赞','日常水贴','积分+1','努力攒积分','帖子不错','good']
         self.checkinNum = 1
         self.read15sNum = 15
         self.using10mNum = 1
         self.likeNum = 5
+        self.shareNum = 5
+        self.commentNum = 10
 
     def postApi(self,service,option,function,postData={}):
         headers = {
@@ -87,6 +91,10 @@ class SeresCheckin():
                     self.using10mNum -= 1
                 elif content == '每日点赞奖励':
                     self.likeNum -= 1
+                elif content == '每日分享动态奖励':
+                    self.shareNum -= 1
+                elif content == '每日评论奖励':
+                    self.commentNum -= 1
             if pageIndex < totalPages:
                 pageIndex += 1
             else:
@@ -98,7 +106,7 @@ class SeresCheckin():
         for i in range(self.checkinNum):
             checkinResult = self.postApi('user', 'me', 'checkin')
             if checkinResult == True:
-                logger.info('获得{}积分'.format(checkinResult['value']))
+                logger.info('签到获得{}积分'.format(checkinResult['value']))
             else:
                 logger.info(checkinResult['message'])
 
@@ -115,8 +123,11 @@ class SeresCheckin():
             return getPostResult['value']['list']
 
     def readPost(self):
-        # 浏览动态1积分*15 点赞1积分*5
+        # 浏览动态1积分*15 点赞1积分*5 分享动态1积分*5 评论1积分*10
         logger.info('今日剩余浏览动态次数{}'.format(self.read15sNum))
+        logger.info('今日剩余点赞次数{}'.format(self.likeNum))
+        logger.info('今日剩余评论次数{}'.format(self.commentNum))
+        logger.info('今日剩余分享次数{}'.format(self.shareNum))
         if self.read15sNum > 0:
             post = self.getPost()
         # 浏览动态
@@ -129,7 +140,7 @@ class SeresCheckin():
             time.sleep(15)
             awardResult = self.postApi('user', 'point', 'add-for-post-reading-15s', postData)
             if awardResult['success'] == True:
-                logger.info('获得{}积分'.format(awardResult['value']['amount']))
+                logger.info('阅读获得{}积分'.format(awardResult['value']['amount']))
             # 点赞
             if self.likeNum > 0 and post[i]['liked'] == False:
                 postData['cancel'] = 'false'
@@ -139,8 +150,33 @@ class SeresCheckin():
                     postData = {
                         'code': 'first_like'
                     }
-                    result = self.postApi('user', 'point', 'add-for-first-rule', postData)
+                    self.postApi('user', 'point', 'add-for-first-rule', postData)
                     self.likeNum -= 1
+            # 评论
+            if self.commentNum > 0:
+                postData = {
+                    'content': random.choice(self.commentList),
+                    'objectType': '0',
+                    'objectId': post[i]['postId']
+                }
+                commentResult = self.postApi('community', 'comment', 'submit', postData)
+                if commentResult['success'] == True:
+                    logger.info(commentResult['message'])
+                    postData = {
+                        'code': 'first_comment'
+                    }
+                    self.postApi('user', 'point', 'add-for-first-rule', postData)
+                    self.commentNum -= 1
+            # 分享
+            if self.shareNum > 0:
+                postData = {
+                    'content': '每日分享动态奖励',
+                    'postId': post[i]['postId']
+                }
+                awardResult = self.postApi('user', 'point', 'add-for-daily-share', postData)
+                if awardResult['success'] == True:
+                    logger.info('分享获得{}积分'.format(awardResult['value']['amount']))
+                self.shareNum -= 1
             time.sleep(2)
             
     def online10min(self):
@@ -152,7 +188,7 @@ class SeresCheckin():
         for i in range(self.using10mNum):
             awardResult = self.postApi('user', 'point', 'add-for-using-10min')
             if awardResult['success'] == True:
-                logger.info('获得{}积分'.format(awardResult['value']['amount']))
+                logger.info('在线10分钟获得{}积分'.format(awardResult['value']['amount']))
         
     def main(self):
         if self.checkCookie() == False:
