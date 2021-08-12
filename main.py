@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.3
-# UpdateDate: 2020-08-12 19:40
-# UpdateLog: 更新浏览动态1积分*15 点赞1积分*5
+# Version: 0.0.4
+# UpdateDate: 2020-08-12 19:57
+# UpdateLog: 优化输出
 
 import requests
 import json
@@ -124,6 +124,7 @@ class SeresCheckin():
             postData = {
                 'postId': post[i]['postId']
             }
+            logger.info('阅读 {} 动态【{}】'.format(post[i]['userNickname'],post[i]['content']))
             self.postApi('community', 'post', 'get-details-data', postData)
             time.sleep(15)
             awardResult = self.postApi('user', 'point', 'add-for-post-reading-15s', postData)
@@ -139,7 +140,6 @@ class SeresCheckin():
                         'code': 'first_like'
                     }
                     result = self.postApi('user', 'point', 'add-for-first-rule', postData)
-                    print(result)
                     self.likeNum -= 1
             time.sleep(2)
             
