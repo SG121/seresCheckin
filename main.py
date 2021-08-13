@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.7
-# UpdateDate: 2020-08-13 10::35
-# UpdateLog: 首次运行生成随机配置
+# Version: 0.0.8
+# UpdateDate: 2020-08-13 10::39
+# UpdateLog: 修改阅读文章逻辑
 
 import requests
 import json
@@ -123,10 +123,10 @@ class SeresCheckin():
         logger.info('今日剩余点赞次数{}'.format(self.likeNum))
         logger.info('今日剩余评论次数{}'.format(self.commentNum))
         logger.info('今日剩余分享次数{}'.format(self.shareNum))
-        if self.read15sNum > 0:
+        if (self.read15sNum > 0) or (self.likeNum > 0) or (self.commentNum > 0) or (self.shareNum > 0):
             post = self.getPost()
         # 浏览动态
-        for i in range(self.read15sNum):
+        for i in range(max(self.read15sNum,self.likeNum,self.commentNum,self.shareNum)):
             postData = {
                 'postId': post[i]['postId']
             }
