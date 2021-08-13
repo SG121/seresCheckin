@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.5
-# UpdateDate: 2020-08-12 21:16
-# UpdateLog: 分享1积分*5 评论1积分*10
+# Version: 0.0.6
+# UpdateDate: 2020-08-13 9:55
+# UpdateLog: 自动删评
 
 import requests
 import json
