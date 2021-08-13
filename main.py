@@ -162,11 +162,20 @@ class SeresCheckin():
                 commentResult = self.postApi('community', 'comment', 'submit', postData)
                 if commentResult['success'] == True:
                     logger.info(commentResult['message'])
+                    commentId = commentResult['value']
                     postData = {
                         'code': 'first_comment'
                     }
                     self.postApi('user', 'point', 'add-for-first-rule', postData)
                     self.commentNum -= 1
+                    time.sleep(2)
+                    # 删评
+                    postData = {
+                        'commentId': commentId
+                    }
+                    delCommentResult = self.postApi('community', 'comment', 'delete-mine', postData)
+                    if delCommentResult['success'] == True:
+                        logger.info(delCommentResult['message'])
             # 分享
             if self.shareNum > 0:
                 postData = {
