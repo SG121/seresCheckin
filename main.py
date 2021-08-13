@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.6
-# UpdateDate: 2020-08-13 9:55
-# UpdateLog: 自动删评
+# Version: 0.0.7
+# UpdateDate: 2020-08-13 10::35
+# UpdateLog: 首次运行生成随机配置
 
 import requests
 import json
@@ -12,17 +12,12 @@ import sys
 import logging
 import time
 import random
+import uuid
 
 class SeresCheckin():
-    def __init__(self,cookie):
+    def __init__(self,cookie,baseData):
         self.cookie = cookie
-        self.baseData = {
-            '_platform': '2',
-            '_systemVersion': '11',
-            '_resolution': '2261*1080',
-            '_version': '2.6.1',
-            '_uuid': '2f10ec91651f435b182296d44f0621027'
-        }
+        self.baseData = baseData
         self.commentList = ['👍','👏','🧡','😀','赞','日常水贴','积分+1','努力攒积分','帖子不错','good']
         self.checkinNum = 1
         self.read15sNum = 15
@@ -249,6 +244,22 @@ def cleanLog(logDir):
     if cleanNum == 0:
         logger.info("未检测到过期日志，无需清理！")
 
+def randomConfig(config):
+    if 'baseData' not in config:
+        logger.info('生成随机配置')
+        systemVersion = ['7','8','9','10','11']
+        resolution = ['2400*1080','2240*1080','1920*1080']
+        version = ['2.6.1','2.6.0']
+        config['baseData'] = {
+            '_platform': '2',
+            '_systemVersion': random.choice(systemVersion),
+            '_resolution': random.choice(resolution),
+            '_version': random.choice(version),
+            '_uuid': uuid.uuid1().hex
+        }
+        with open("config.json", "w") as fp:
+            fp.write(json.dumps(config,indent=4))
+    return config
 
 if __name__ == '__main__':
     rootDir = os.path.dirname(os.path.abspath(__file__))
@@ -259,6 +270,7 @@ if __name__ == '__main__':
         logDir = config['logDir'] + "/serseCheckin"
     global logger
     logger = createLog(logDir)
+    config = randomConfig(config)
     userNum = len(config['cookie'])
     logger.info('共{}个账号'.format(userNum))
     today = int(time.mktime(time.strptime(time.strftime("%Y-%m-%d", time.localtime(int(time.time()))), "%Y-%m-%d"))) * 1000
@@ -266,7 +278,7 @@ if __name__ == '__main__':
     for i in range(userNum):
         logger.info('开始账号{}'.format(i+1))
         cookie = config['cookie'][i]
-        user = SeresCheckin(cookie)
+        user = SeresCheckin(cookie,config['baseData'])
         user.main()
 cleanLog(logDir)
     
