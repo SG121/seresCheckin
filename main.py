@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.11
-# UpdateDate: 2020-08-28 14:24
-# UpdateLog: 输出连续、累积签到天数、奖品
+# Version: 0.0.12
+# UpdateDate: 2020-08-28 14:55
+# UpdateLog: 添加抽奖
 
 import requests
 import json
@@ -59,6 +59,14 @@ class SeresCheckin():
         return response.json()
     
     def postApi3(self,service,option,function):
+        if option == 'checkin':
+            Referer = 'http://adminapp.seres.cn/h5/checkin.html?token={}&topBarHeight=35'.format(self.cookie)
+            data = {}
+        elif option == 'lottery':
+            Referer = 'http://adminapp.seres.cn/h5/lottery/01.html?lotterySn=JGG01&loginToken={}'.format(self.cookie)
+            data = {
+                'lotterySn': 'JGG01'
+            }
         headers = {
             'Host': 'app.seres.cn',
             'Connection': 'keep-alive',
@@ -73,14 +81,14 @@ class SeresCheckin():
             'Accept': '*/*',
             'X-Requested-With': 'cn.seres',
             'Sec-Fetch-Site': 'cross-site',
-            'Referer': 'http://adminapp.seres.cn/h5/checkin.html?token={}&topBarHeight=35'.format(self.cookie),
+            'Referer': Referer,
             'Accept-Encoding': 'gzip, deflate, br',
             'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
         }
         params = (
             ('_ts', int(round(time.time()*1000))),
         )
-        response = requests.post('https://app.seres.cn/api/{}/app/{}/{}'.format(service,option,function), headers=headers, params=params)
+        response = requests.post('https://app.seres.cn/api/{}/app/{}/{}'.format(service,option,function), headers=headers, params=params, data=data)
         return response.json()
     
     def checkCookie(self):
@@ -249,6 +257,26 @@ class SeresCheckin():
             awardResult = self.postApi('user', 'point', 'add-for-using-10min')
             if awardResult['success'] == True:
                 logger.info('在线10分钟获得{}积分'.format(awardResult['value']['amount']))
+    
+    def lottery(self):
+        # 获取免费抽奖机会
+        addLotteryTryResult =  self.postApi3('user','lottery','add-one-try')
+        # 查询机会
+        getLotteryDetailsResult =  self.postApi3('user','lottery','get-details')
+        if getLotteryDetailsResult == False:
+            return False
+        todayRestTries = getLotteryDetailsResult['value']['todayRestTries']
+        logger.info('今日剩余抽奖次数：{}'.format(todayRestTries))
+        for i in range(todayRestTries):
+            logger.info('开始第{}次抽奖'.format(i+1))
+            lotteryResult = self.postApi3('user','lottery','try-lottery')
+            if lotteryResult['success'] == False:
+                continue
+            if lotteryResult['value']['rewardName'] == None:
+                logger.info('抽中💨')
+            else:
+                logger.info('运气爆棚抽中{}'.format(lotteryResult['value']['rewardName']))
+            time.sleep(5)
         
     def main(self):
         if self.checkCookie() == False:
@@ -258,6 +286,7 @@ class SeresCheckin():
         self.readPost()
         self.submitPost()
         self.online10min()
+        self.lottery()
 
 def readConfig(configPath):
     if not os.path.exists(configPath):
