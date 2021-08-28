@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.8
-# UpdateDate: 2020-08-13 10::39
-# UpdateLog: 修改阅读文章逻辑
+# Version: 0.0.9
+# UpdateDate: 2020-08-28 13:54
+# UpdateLog: 每日动态 5*2积分
 
 import requests
 import json
@@ -90,6 +90,8 @@ class SeresCheckin():
                     self.shareNum -= 1
                 elif content == '每日评论奖励':
                     self.commentNum -= 1
+                elif content == '每日动态奖励':
+                    self.postNum -= 1
             if pageIndex < totalPages:
                 pageIndex += 1
             else:
@@ -182,6 +184,28 @@ class SeresCheckin():
                     logger.info('分享获得{}积分'.format(awardResult['value']['amount']))
                 self.shareNum -= 1
             time.sleep(2)
+
+    def submitPost(self):
+        # 发表动态 5*2积分
+        logger.info('今日发表动态次数{}'.format(self.postNum))
+        for i in range(self.postNum):
+            postData = {
+                'content': ' '
+            }
+            # 发帖
+            submitPostResult = self.postApi('community','post','submit',postData)
+            logger.info(submitPostResult['message'])
+            if submitPostResult['success'] == False:
+                continue
+            postId = submitPostResult['value']['postId']
+            time.sleep(2)
+            # 删帖
+            postData = {
+                'id': postId
+            }
+            deletePostResult = self.postApi('community','post','delete',postData)
+            logger.info(deletePostResult['message'])
+            time.sleep(2)
             
     def online10min(self):
         # 在线10分钟 1积分
@@ -200,6 +224,7 @@ class SeresCheckin():
         self.checkTaskStatus()
         self.checkin()
         self.readPost()
+        self.submitPost()
         self.online10min()
 
 def readConfig(configPath):
