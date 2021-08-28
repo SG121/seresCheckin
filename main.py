@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.9
-# UpdateDate: 2020-08-28 13:54
-# UpdateLog: 每日动态 5*2积分
+# Version: 0.0.10
+# UpdateDate: 2020-08-28 14:07
+# UpdateLog: 同步APP最新版本号
 
 import requests
 import json
@@ -25,6 +25,7 @@ class SeresCheckin():
         self.likeNum = 5
         self.shareNum = 5
         self.commentNum = 10
+        self.postNum = 5
 
     def postApi(self,service,option,function,postData={}):
         headers = {
@@ -274,16 +275,17 @@ def randomConfig(config):
         logger.info('生成随机配置')
         systemVersion = ['7','8','9','10','11']
         resolution = ['2400*1080','2240*1080','1920*1080']
-        version = ['2.6.1','2.6.0']
         config['baseData'] = {
             '_platform': '2',
             '_systemVersion': random.choice(systemVersion),
             '_resolution': random.choice(resolution),
-            '_version': random.choice(version),
+            '_version': '2.7.2',
             '_uuid': uuid.uuid1().hex
         }
-        with open("config.json", "w") as fp:
-            fp.write(json.dumps(config,indent=4))
+    if '_version' in config['baseData']:
+        config['baseData']['_version'] = '2.7.2'
+    with open("config.json", "w") as fp:
+        fp.write(json.dumps(config,indent=4))
     return config
 
 if __name__ == '__main__':
