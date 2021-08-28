@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.10
-# UpdateDate: 2020-08-28 14:07
-# UpdateLog: 同步APP最新版本号
+# Version: 0.0.11
+# UpdateDate: 2020-08-28 14:24
+# UpdateLog: 输出连续、累积签到天数、奖品
 
 import requests
 import json
@@ -58,6 +58,31 @@ class SeresCheckin():
         response = requests.post('https://app.seres.cn/api/{}/app/{}/{}'.format(service,option,function), headers=headers, params=params)
         return response.json()
     
+    def postApi3(self,service,option,function):
+        headers = {
+            'Host': 'app.seres.cn',
+            'Connection': 'keep-alive',
+            'Content-Length': '0',
+            'Pragma': 'no-cache',
+            'Cache-Control': 'no-cache',
+            'Sec-Fetch-Mode': 'cors',
+            'Origin': 'http://adminapp.seres.cn',
+            'APPACCESSTOKEN': self.cookie,
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Redmi K30 5G Build/RKQ1.200826.002; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/77.0.3865.120 MQQBrowser/6.2 TBS/045714 Mobile Safari/537.36',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': '*/*',
+            'X-Requested-With': 'cn.seres',
+            'Sec-Fetch-Site': 'cross-site',
+            'Referer': 'http://adminapp.seres.cn/h5/checkin.html?token={}&topBarHeight=35'.format(self.cookie),
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
+        }
+        params = (
+            ('_ts', int(round(time.time()*1000))),
+        )
+        response = requests.post('https://app.seres.cn/api/{}/app/{}/{}'.format(service,option,function), headers=headers, params=params)
+        return response.json()
+    
     def checkCookie(self):
         userInfo = self.postApi('user', 'me', 'get-me-center-data')
         if userInfo['code'] == '4001':
@@ -107,6 +132,12 @@ class SeresCheckin():
                 logger.info('签到获得{}积分'.format(checkinResult['value']))
             else:
                 logger.info(checkinResult['message'])
+        getHomeDataResult = self.postApi3('user','checkin','get-home-data')
+        if getHomeDataResult['success'] == False:
+            return
+        logger.info('已连续签到天数：{}，已累积签到天数{}'.format(getHomeDataResult['value']['continuousCheckins'],getHomeDataResult['value']['totalCheckinPoints']))
+        if getHomeDataResult['value']['rewardProduct'] != None:
+            logger.info('获得连续签到奖品：【{}】'.format(getHomeDataResult['value']['rewardProduct']['name']))
 
     def getPost(self):
         postData = {
