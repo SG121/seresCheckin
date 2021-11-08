@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.12
-# UpdateDate: 2020-08-28 14:55
-# UpdateLog: 添加抽奖
+# Version: 0.0.13
+# UpdateDate: 2020-11-8 15:25
+# UpdateLog: 添加抽奖开关，同步版本号
 
 import requests
 import json
@@ -15,9 +15,10 @@ import random
 import uuid
 
 class SeresCheckin():
-    def __init__(self,cookie,baseData):
+    def __init__(self,cookie,baseData,draw):
         self.cookie = cookie
         self.baseData = baseData
+        self.draw = draw
         self.commentList = ['👍','👏','🧡','😀','赞','日常水贴','积分+1','努力攒积分','帖子不错','good']
         self.checkinNum = 1
         self.read15sNum = 15
@@ -259,6 +260,9 @@ class SeresCheckin():
                 logger.info('在线10分钟获得{}积分'.format(awardResult['value']['amount']))
     
     def lottery(self):
+        if self.draw == '' or self.draw == False:
+            logger.info('默认不抽奖，请将draw设置为true')
+            return False
         # 获取免费抽奖机会
         addLotteryTryResult =  self.postApi3('user','lottery','add-one-try')
         # 查询机会
@@ -333,17 +337,19 @@ def cleanLog(logDir):
 def randomConfig(config):
     if 'baseData' not in config:
         logger.info('生成随机配置')
-        systemVersion = ['7','8','9','10','11']
+        systemVersion = ['8','9','10','11']
         resolution = ['2400*1080','2240*1080','1920*1080']
         config['baseData'] = {
             '_platform': '2',
             '_systemVersion': random.choice(systemVersion),
             '_resolution': random.choice(resolution),
-            '_version': '2.7.2',
+            '_version': '3.2.2',
             '_uuid': uuid.uuid1().hex
         }
+    if 'draw' not in config:
+        config['draw'] = False
     if '_version' in config['baseData']:
-        config['baseData']['_version'] = '2.7.2'
+        config['baseData']['_version'] = '3.2.2'
     with open("config.json", "w") as fp:
         fp.write(json.dumps(config,indent=4))
     return config
@@ -365,7 +371,7 @@ if __name__ == '__main__':
     for i in range(userNum):
         logger.info('开始账号{}'.format(i+1))
         cookie = config['cookie'][i]
-        user = SeresCheckin(cookie,config['baseData'])
+        user = SeresCheckin(cookie,config['baseData'],config['draw'])
         user.main()
 cleanLog(logDir)
     
