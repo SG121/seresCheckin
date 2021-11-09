@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.13
-# UpdateDate: 2020-11-8 15:25
-# UpdateLog: 添加抽奖开关，同步版本号
+# Version: 0.0.14
+# UpdateDate: 2020-11-9 23:02
+# UpdateLog: 打印积分
 
 import requests
 import json
@@ -97,9 +97,10 @@ class SeresCheckin():
         if userInfo['code'] == '4001':
             logger.error('用户{} Cookie无效'.format(i+1))
             return False
-        else:
-            self.nickname = userInfo['value']['nickname']
-            logger.info('用户{}登陆成功'.format(self.nickname))
+        self.nickname = userInfo['value']['nickname']
+        points = userInfo['value']['points']
+        logger.info('用户{}登陆成功，当前积分{}'.format(self.nickname,points))
+        
         
     def checkTaskStatus(self):
         pageIndex = 0 
