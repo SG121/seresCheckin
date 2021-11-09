@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.14
-# UpdateDate: 2020-11-9 23:02
-# UpdateLog: 打印积分
+# Version: 0.0.15
+# UpdateDate: 2020-11-9 23:38
+# UpdateLog: 添加bark、telegram、钉钉、server酱、企业微信消息推送功能
 
 import requests
 import json
@@ -13,6 +13,7 @@ import logging
 import time
 import random
 import uuid
+from notify import send
 
 class SeresCheckin():
     def __init__(self,cookie,baseData,draw):
@@ -96,11 +97,11 @@ class SeresCheckin():
         userInfo = self.postApi('user', 'me', 'get-me-center-data')
         if userInfo['code'] == '4001':
             logger.error('用户{} Cookie无效'.format(i+1))
+            send("SERES账号失效通知",'用户{} Cookie已失效'.format(i+1))
             return False
         self.nickname = userInfo['value']['nickname']
         points = userInfo['value']['points']
         logger.info('用户{}登陆成功，当前积分{}'.format(self.nickname,points))
-        
         
     def checkTaskStatus(self):
         pageIndex = 0 
@@ -281,6 +282,7 @@ class SeresCheckin():
                 logger.info('抽中💨')
             else:
                 logger.info('运气爆棚抽中{}'.format(lotteryResult['value']['rewardName']))
+                send("SERES抽奖通知","账号【{}】运气爆棚，抽中{}".format(self.nickname,lotteryResult['value']['rewardName']))
             time.sleep(5)
         
     def main(self):
@@ -374,6 +376,6 @@ if __name__ == '__main__':
         cookie = config['cookie'][i]
         user = SeresCheckin(cookie,config['baseData'],config['draw'])
         user.main()
-cleanLog(logDir)
+    cleanLog(logDir)
     
     

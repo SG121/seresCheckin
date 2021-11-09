@@ -2,6 +2,17 @@
     "cookie": [
         ""
     ],
+    "notify": {
+        "BARK": "",
+        "SCKEY": "",
+        "TG_BOT_TOKEN": "",
+        "TG_USER_ID": "",
+        "TG_PROXY_IP": "",
+        "TG_PROXY_PORT": "",
+        "DD_BOT_ACCESS_TOKEN": "",
+        "DD_BOT_SECRET": "",
+        "QYWX_APP": ""
+    },
     "logDir": "",
     "draw": false
 }
