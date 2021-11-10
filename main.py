@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.16
-# UpdateDate: 2020-11-10 17:38
-# UpdateLog: 重构文件结构
+# Version: 0.0.17
+# UpdateDate: 2020-11-10 17:50
+# UpdateLog: 默认每天使用一次免费抽奖机会
 
 import requests
 import json
@@ -263,9 +263,6 @@ class SeresCheckin():
                 logger.info('在线10分钟获得{}积分'.format(awardResult['value']['amount']))
     
     def lottery(self):
-        if self.draw == '' or self.draw == False:
-            logger.info('默认不抽奖，请将draw设置为true')
-            return False
         # 获取免费抽奖机会
         addLotteryTryResult =  self.postApi3('user','lottery','add-one-try')
         # 查询机会
@@ -273,8 +270,14 @@ class SeresCheckin():
         if getLotteryDetailsResult == False:
             return False
         todayRestTries = getLotteryDetailsResult['value']['todayRestTries']
-        logger.info('今日剩余抽奖次数：{}'.format(todayRestTries))
-        for i in range(todayRestTries):
+        freeRestTries = getLotteryDetailsResult['value']['freeRestTries']
+        if self.draw == '' or self.draw == False:
+            restTries = freeRestTries
+            logger.info('默认不使用积分抽奖，否则请将draw设置为true')
+        else:
+            restTries = todayRestTries
+        logger.info('今日剩余抽奖次数：{}'.format(restTries))
+        for i in range(restTries):
             logger.info('开始第{}次抽奖'.format(i+1))
             lotteryResult = self.postApi3('user','lottery','try-lottery')
             if lotteryResult['success'] == False:
@@ -283,7 +286,7 @@ class SeresCheckin():
                 logger.info('抽中💨')
             else:
                 logger.info('运气爆棚抽中{}'.format(lotteryResult['value']['rewardName']))
-                send("SERES抽奖通知","账号【{}】运气爆棚，抽中{}".format(self.nickname,lotteryResult['value']['rewardName']))
+                send("SERES中奖通知","账号【{}】运气爆棚，抽中{}".format(self.nickname,lotteryResult['value']['rewardName']))
             time.sleep(5)
         
     def main(self):
