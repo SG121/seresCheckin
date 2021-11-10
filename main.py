@@ -1,18 +1,11 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.17
-# UpdateDate: 2020-11-10 17:50
-# UpdateLog: 默认每天使用一次免费抽奖机会
+# Version: 0.0.18
+# UpdateDate: 2020-11-10 20:05
+# UpdateLog: 修复模块调用
 
-import requests
-import json
-import os
-import sys
-import logging
-import time
-import random
-import uuid
+import requests,json,time
 from utils import logger,config,logDir,cleanLog
 from notify import send
 
