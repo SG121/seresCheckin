@@ -163,9 +163,9 @@ def qywxapp_bot(title, content):
         options = {
             'msgtype': 'textcard',
             'textcard': {
-                title: f'{title}',
-                description: f'{content}',
-                btntxt: '更多'
+                'title': f'{title}',
+                'description': f'{content}',
+                'btntxt': '更多'
             }
         }
     elif qywx_app_params[4] == '1':
