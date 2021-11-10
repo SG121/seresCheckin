@@ -18,6 +18,7 @@ import urllib.parse
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 import re
+from utils import config,logger
 
 # 通知服务
 BARK = ''                                                                 # bark服务,此参数如果以http或者https开头则判定为自建bark服务; secrets可填;
@@ -31,18 +32,6 @@ DD_BOT_SECRET = ''                                                        # 钉�
 QYWX_APP = ''                                                             # 企业微信应用的QYWX_APP; secrets可填 参考http://note.youdao.com/s/HMiudGkb
 
 notify_mode = []
-
-rootDir = os.path.dirname(os.path.abspath(__file__))
-configPath = rootDir + "/config.json"
-if not os.path.exists(configPath):
-    print('配置文件不存在，请复制模板文件config.sample.json为config.json')
-    sys.exit(1)
-with open(configPath,encoding='UTF-8') as fp:
-    try:
-        config = json.load(fp)
-    except:
-        print('读取配置文件失败，请检查配置文件是否符合json语法')
-        sys.exit(1)
 
 if "BARK" in config['notify'] and config['notify']["BARK"]:
     BARK = config['notify']["BARK"]
@@ -59,26 +48,25 @@ if "QYWX_APP" in config['notify'] and config['notify']["QYWX_APP"]:
 
 if BARK:
     notify_mode.append('bark')
-    print("BARK 推送打开")
+    logger.info("BARK 推送打开")
 if SCKEY:
     notify_mode.append('sc_key')
-    print("Server酱 推送打开")
+    logger.info("Server酱 推送打开")
 if TG_BOT_TOKEN and TG_USER_ID:
     notify_mode.append('telegram_bot')
-    print("Telegram 推送打开")
+    logger.info("Telegram 推送打开")
 if DD_BOT_ACCESS_TOKEN and DD_BOT_SECRET:
     notify_mode.append('dingding_bot')
-    print("钉钉机器人 推送打开")
+    logger.info("钉钉机器人 推送打开")
 if QYWX_APP:
     notify_mode.append('qywxapp_bot')
-    print("企业微信应用 推送打开")
+    logger.info("企业微信应用 推送打开")
 
 def bark(title, content):
-    print("\n")
     if not BARK:
-        print("bark服务的bark_token未设置!!\n取消推送")
+        logger.error("bark服务的bark_token未设置!!\n取消推送")
         return
-    print("bark服务启动")
+    logger.info("bark服务启动")
     url = None
     if BARK.startswith('http'):
       url = f"""{BARK}/{title}/{content}"""
@@ -86,34 +74,32 @@ def bark(title, content):
       url = f"""https://api.day.app/{BARK}/{title}/{content}"""
     response = requests.get(url).json()
     if response['code'] == 200:
-        print('推送成功！')
+        logger.info('推送成功！')
     else:
-        print('推送失败！')
+        logger.error('推送失败！')
 
 def serverJ(title, content):
-    print("\n")
     if not SCKEY:
-        print("server酱服务的SCKEY未设置!!\n取消推送")
+        logger.error("server酱服务的SCKEY未设置!!\n取消推送")
         return
-    print("serverJ服务启动")
+    logger.info("serverJ服务启动")
     data = {
         "text": title,
         "desp": content.replace("\n", "\n\n")
     }
     response = requests.post(f"https://sc.ftqq.com/{SCKEY}.send", data=data).json()
     if response['errno'] == 0:
-        print('推送成功！')
+        logger.info('推送成功！')
     else:
-        print('推送失败！')
+        logger.error('推送失败！')
 
 def telegram_bot(title, content):
-    print("\n")
     bot_token = TG_BOT_TOKEN
     user_id = TG_USER_ID
     if not bot_token or not user_id:
-        print("tg服务的bot_token或者user_id未设置!!\n取消推送")
+        logger.error("tg服务的bot_token或者user_id未设置!!\n取消推送")
         return
-    print("tg服务启动")
+    logger.info("tg服务启动")
     url=f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     payload = {'chat_id': str(TG_USER_ID), 'text': f'{title}\n\n{content}', 'disable_web_page_preview': 'true'}
@@ -123,9 +109,9 @@ def telegram_bot(title, content):
         proxies = {"http": proxyStr, "https": proxyStr}
     response = requests.post(url=url, headers=headers, params=payload, proxies=proxies).json()
     if response['ok']:
-        print('推送成功！')
+        logger.info('推送成功！')
     else:
-        print('推送失败！')
+        logger.error('推送失败！')
 
 def dingding_bot(title, content):
     timestamp = str(round(time.time() * 1000))  # 时间戳
@@ -134,7 +120,7 @@ def dingding_bot(title, content):
     string_to_sign_enc = string_to_sign.encode('utf-8')
     hmac_code = hmac.new(secret_enc, string_to_sign_enc, digestmod=hashlib.sha256).digest()
     sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))  # 签名
-    print('开始使用 钉钉机器人 推送消息...', end='')
+    logger.info('开始使用 钉钉机器人 推送消息...', end='')
     url = f'https://oapi.dingtalk.com/robot/send?access_token={DD_BOT_ACCESS_TOKEN}&timestamp={timestamp}&sign={sign}'
     headers = {'Content-Type': 'application/json;charset=utf-8'}
     data = {
@@ -143,16 +129,15 @@ def dingding_bot(title, content):
     }
     response = requests.post(url=url, data=json.dumps(data), headers=headers, timeout=15).json()
     if not response['errcode']:
-        print('推送成功！')
+        logger.info('推送成功！')
     else:
-        print('推送失败！')
+        logger.error('推送失败！')
 
 def qywxapp_bot(title, content):
-    print("\n")
     if not QYWX_APP:
-        print("企业微信应用的QYWX_APP未设置!!\n取消推送")
+        logger.error("企业微信应用的QYWX_APP未设置!!\n取消推送")
         return
-    print("企业微信应用启动")
+    logger.info("企业微信应用启动")
     qywx_app_params = QYWX_APP.split(',')
     url='https://qyapi.weixin.qq.com/cgi-bin/gettoken'
     headers= {
@@ -220,9 +205,9 @@ def qywxapp_bot(title, content):
     response = requests.post(url=url, headers=headers, data=json.dumps(data)).json()
 
     if response['errcode'] == 0:
-        print('推送成功！')
+        logger.info('推送成功！')
     else:
-        print('推送失败！')
+        logger.error('推送失败！')
 
 def change_user_id(desp):
     qywx_app_params = QYWX_APP.split(',')
@@ -252,34 +237,34 @@ def send(title, content):
             if BARK:
                 bark(title=title, content=content)
             else:
-                print('未启用 bark')
+                logger.error('未启用 bark')
             continue
         if i == 'sc_key':
             if SCKEY:
                 serverJ(title=title, content=content)
             else:
-                print('未启用 Server酱')
+                logger.error('未启用 Server酱')
             continue
         elif i == 'dingding_bot':
             if DD_BOT_ACCESS_TOKEN and DD_BOT_SECRET:
                 dingding_bot(title=title, content=content)
             else:
-                print('未启用 钉钉机器人')
+                logger.error('未启用 钉钉机器人')
             continue
         elif i == 'telegram_bot':
             if TG_BOT_TOKEN and TG_USER_ID:
                 telegram_bot(title=title, content=content)
             else:
-                print('未启用 telegram机器人')
+                logger.error('未启用 telegram机器人')
             continue
         elif i == 'qywxapp_bot':
             if QYWX_APP:
                 qywxapp_bot(title=title, content=content)
             else:
-                print('未启用 企业微信应用推送')
+                logger.error('未启用 企业微信应用推送')
             continue
         else:
-            print('此类推送方式不存在')
+            logger.error('此类推送方式不存在')
 
 def requests_session(
     retries=3,
