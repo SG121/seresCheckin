@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.19
-# UpdateDate: 2020-11-10 23:27
-# UpdateLog: debug
+# Version: 0.0.20
+# UpdateDate: 2020-11-12 14:27
+# UpdateLog: 修复钉钉推送
 
 import requests,json,time,random
 from utils import logger,config,logDir,cleanLog
