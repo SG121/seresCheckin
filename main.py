@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2020-08-12
 # Link: 
-# Version: 0.0.20
-# UpdateDate: 2020-11-12 14:27
-# UpdateLog: 修复钉钉推送
+# Version: 0.0.21
+# UpdateDate: 2020-11-30 15:41
+# UpdateLog: 下线抽奖
 
 import requests,json,time,random
 from utils import logger,config,logDir,cleanLog
@@ -290,7 +290,7 @@ class SeresCheckin():
         self.readPost()
         self.submitPost()
         self.online10min()
-        self.lottery()
+        # self.lottery()
 
 if __name__ == '__main__':
     userNum = len(config['cookie'])
