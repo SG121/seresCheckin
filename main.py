@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2021-08-12
 # Link: 
-# Version: 0.0.23
-# UpdateDate: 2022-1-28 11:11
-# UpdateLog: 修复
+# Version: 0.0.24
+# UpdateDate: 2022-1-28 11:15
+# UpdateLog: 去除发布文章功能
 
 import requests,json,time,random
 from utils import logger,config,logDir,cleanLog
@@ -21,7 +21,7 @@ class SeresCheckin():
         self.likeNum = 5
         self.shareNum = 5
         # self.commentNum = 10
-        self.postNum = 5
+        # self.postNum = 5
 
     def postApi(self,service,option,function,postData={}):
         headers = {
@@ -121,8 +121,8 @@ class SeresCheckin():
                     self.shareNum -= 1
                 # elif content == '每日评论奖励':
                 #     self.commentNum -= 1
-                elif content == '每日动态奖励':
-                    self.postNum -= 1
+                # elif content == '每日动态奖励':
+                #     self.postNum -= 1
             if pageIndex < totalPages:
                 pageIndex += 1
             else:
@@ -288,7 +288,7 @@ class SeresCheckin():
         self.checkTaskStatus()
         self.checkin()
         self.readPost()
-        self.submitPost()
+        # self.submitPost()
         self.online10min()
         # self.lottery()
 
