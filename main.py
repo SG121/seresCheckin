@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
-# Date: 2020-08-12
+# Date: 2021-08-12
 # Link: 
-# Version: 0.0.21
-# UpdateDate: 2020-11-30 15:41
-# UpdateLog: 下线抽奖
+# Version: 0.0.22
+# UpdateDate: 2022-1-28 11:02
+# UpdateLog: 去除评论功能
 
 import requests,json,time,random
 from utils import logger,config,logDir,cleanLog
@@ -14,13 +14,13 @@ class SeresCheckin():
         self.cookie = cookie
         self.baseData = baseData
         self.draw = draw
-        self.commentList = ['👍','👏','🧡','😀','赞','日常水贴','积分+1','努力攒积分','帖子不错','good']
+        # self.commentList = ['👍','👏','🧡','😀','赞','日常水贴','积分+1','努力攒积分','帖子不错','good']
         self.checkinNum = 1
         self.read15sNum = 15
         self.using10mNum = 1
         self.likeNum = 5
         self.shareNum = 5
-        self.commentNum = 10
+        # self.commentNum = 10
         self.postNum = 5
 
     def postApi(self,service,option,function,postData={}):
@@ -119,8 +119,8 @@ class SeresCheckin():
                     self.likeNum -= 1
                 elif content == '每日分享动态奖励':
                     self.shareNum -= 1
-                elif content == '每日评论奖励':
-                    self.commentNum -= 1
+                # elif content == '每日评论奖励':
+                #     self.commentNum -= 1
                 elif content == '每日动态奖励':
                     self.postNum -= 1
             if pageIndex < totalPages:
@@ -160,7 +160,7 @@ class SeresCheckin():
         # 浏览动态1积分*15 点赞1积分*5 分享动态1积分*5 评论1积分*10
         logger.info('今日剩余浏览动态次数{}'.format(self.read15sNum))
         logger.info('今日剩余点赞次数{}'.format(self.likeNum))
-        logger.info('今日剩余评论次数{}'.format(self.commentNum))
+        # logger.info('今日剩余评论次数{}'.format(self.commentNum))
         logger.info('今日剩余分享次数{}'.format(self.shareNum))
         if (self.read15sNum > 0) or (self.likeNum > 0) or (self.commentNum > 0) or (self.shareNum > 0):
             post = self.getPost()
@@ -187,29 +187,29 @@ class SeresCheckin():
                     self.postApi('user', 'point', 'add-for-first-rule', postData)
                     self.likeNum -= 1
             # 评论
-            if self.commentNum > 0:
-                postData = {
-                    'content': random.choice(self.commentList),
-                    'objectType': '0',
-                    'objectId': post[i]['postId']
-                }
-                commentResult = self.postApi('community', 'comment', 'submit', postData)
-                if commentResult['success'] == True:
-                    logger.info(commentResult['message'])
-                    commentId = commentResult['value']
-                    postData = {
-                        'code': 'first_comment'
-                    }
-                    self.postApi('user', 'point', 'add-for-first-rule', postData)
-                    self.commentNum -= 1
-                    time.sleep(2)
-                    # 删评
-                    postData = {
-                        'commentId': commentId
-                    }
-                    delCommentResult = self.postApi('community', 'comment', 'delete-mine', postData)
-                    if delCommentResult['success'] == True:
-                        logger.info(delCommentResult['message'])
+            # if self.commentNum > 0:
+            #     postData = {
+            #         'content': random.choice(self.commentList),
+            #         'objectType': '0',
+            #         'objectId': post[i]['postId']
+            #     }
+            #     commentResult = self.postApi('community', 'comment', 'submit', postData)
+            #     if commentResult['success'] == True:
+            #         logger.info(commentResult['message'])
+            #         commentId = commentResult['value']
+            #         postData = {
+            #             'code': 'first_comment'
+            #         }
+            #         self.postApi('user', 'point', 'add-for-first-rule', postData)
+            #         self.commentNum -= 1
+            #         time.sleep(2)
+            #         # 删评
+            #         postData = {
+            #             'commentId': commentId
+            #         }
+            #         delCommentResult = self.postApi('community', 'comment', 'delete-mine', postData)
+            #         if delCommentResult['success'] == True:
+            #             logger.info(delCommentResult['message'])
             # 分享
             if self.shareNum > 0:
                 postData = {
