@@ -1,9 +1,9 @@
 # Author: leeyiding(乌拉)
 # Date: 2021-08-12
 # Link: 
-# Version: 0.0.22
-# UpdateDate: 2022-1-28 11:02
-# UpdateLog: 去除评论功能
+# Version: 0.0.23
+# UpdateDate: 2022-1-28 11:11
+# UpdateLog: 修复
 
 import requests,json,time,random
 from utils import logger,config,logDir,cleanLog
@@ -162,10 +162,10 @@ class SeresCheckin():
         logger.info('今日剩余点赞次数{}'.format(self.likeNum))
         # logger.info('今日剩余评论次数{}'.format(self.commentNum))
         logger.info('今日剩余分享次数{}'.format(self.shareNum))
-        if (self.read15sNum > 0) or (self.likeNum > 0) or (self.commentNum > 0) or (self.shareNum > 0):
+        if (self.read15sNum > 0) or (self.likeNum > 0) or (self.shareNum > 0):
             post = self.getPost()
         # 浏览动态
-        for i in range(max(self.read15sNum,self.likeNum,self.commentNum,self.shareNum)):
+        for i in range(max(self.read15sNum,self.likeNum,self.shareNum)):
             postData = {
                 'postId': post[i]['postId']
             }
